@@ -707,7 +707,7 @@ no_exifdata:
 
 	return ret;
 }
-
+/*
 sqlite_int64
 GetVideoMetadataLite(const char * path, char * name)
 {
@@ -751,6 +751,51 @@ GetVideoMetadataLite(const char * path, char * name)
 
 	return ret;
 
+}*/
+char p1[65536], p3[65536], p4[65536], p5[65536], p6[65536], p7[65536], p8[65536], p9[65536], p10[65536], p11[65536], p12[65536], p13[65536], p14[65536], p15[65536];
+char buf[65536];
+int pi1, pi2, pi3;
+
+sqlite_int64
+GetVideoMetadataLite(const char * path, char * name)
+{
+	struct stat file;
+	int ret;
+	char *metadata_ex = malloc(PATH_MAX);
+	sprintf(metadata_ex, "%s.meta", path);
+
+	if ( stat(metadata_ex, &file) != 0 )
+	{
+		DPRINTF(E_WARN, L_METADATA, "GetVideoMetadataLite stat error for %s%s!\n", path, name);
+		return GetVideoMetadata(path, name);
+	} else
+	{
+		DPRINTF(E_DEBUG, L_METADATA, "Reading metadata file...[%s]\n", path);
+
+		// Reading metadata file
+		FILE *metadata_ex_d = fopen(metadata_ex, "r");
+		unsigned int n = fread(&buf, 1, strlen(buf), metadata_ex_d);
+		sscanf(buf, "%s\n%d\n%d\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%d\n",p1, pi1, pi2,
+			p3,p4,p5,p6,p7,p8,p9,p11,p11,p12,p13,p14,p15,pi3);
+
+		fclose(metadata_ex_d);
+		free(metadata_ex);
+
+		ret = sql_exec(db, "INSERT into DETAILS"
+		                   " (PATH, SIZE, TIMESTAMP, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE, RESOLUTION,"
+		                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART) "
+		                   "VALUES"
+		                   " (%Q, %lld, %ld, %Q, %Q, %Q, %Q, %Q, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld);",
+		                   path, (long long)pi1, pi2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, pi3);
+
+		if( ret == SQLITE_OK )
+		{
+			ret = sqlite3_last_insert_rowid(db);
+			check_for_captions(path, ret);
+		}
+
+		return ret;
+	}
 }
 
 sqlite_int64
@@ -1645,8 +1690,21 @@ video_no_dlna:
 	}
 	else
 	{
+		DPRINTF(E_DEBUG, L_METADATA, "Create metadata file...[%s]\n", path);
+
 		ret = sqlite3_last_insert_rowid(db);
 		check_for_captions(path, ret);
+
+		// Create metadata file
+		char *metadata_ex = malloc(PATH_MAX);
+		sprintf(metadata_ex, "%s.meta", path);
+		FILE *metadata_ex_d = fopen(metadata_ex, "w");
+		sprintf(buf, "%s\n%d\n%d\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%d\n", path, (long long)file.st_size, 
+			file.st_mtime, m.duration, m.date, m.channels, m.bitrate, m.frequency, m.resolution, 
+			m.title, m.creator, m.artist, m.genre, m.comment, m.dlna_pn, m.mime, album_art);
+		unsigned int n = fwrite(&buf, 1, strlen(buf), metadata_ex_d);
+		fclose(metadata_ex_d);
+		free(metadata_ex);
 	}
 	free_metadata(&m, free_flags);
 

@@ -482,7 +482,7 @@ insert_file(char * name, const char * path, const char * parentID, int object)
  		orig_name = strdup(name);
 		strcpy(base, VIDEO_DIR_ID);
 		strcpy(class, "item.videoItem");
-		detailID = GetVideoMetadata(path, name);
+		detailID = GetVideoMetadataLite(path, name);
 		//detailID = 0;
 		if( !detailID )
 			strcpy(name, orig_name);
@@ -553,6 +553,8 @@ CreateDatabase(void)
 
 	                         VIDEO_ID, "0", _("Video"),
 	                     VIDEO_ALL_ID, VIDEO_ID, _("All Video"),
+
+	                     
 	                     VIDEO_DIR_ID, VIDEO_ID, _("Folders"),
 
 	                         IMAGE_ID, "0", _("Pictures"),
