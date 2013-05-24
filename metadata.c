@@ -34,6 +34,7 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include "tagutils/tagutils.h"
+//#include <libgen.h>
 
 #include "upnpglobalvars.h"
 #include "upnpreplyparse.h"
@@ -752,47 +753,142 @@ GetVideoMetadataLite(const char * path, char * name)
 	return ret;
 
 }*/
-char p1[65536], p3[65536], p4[65536], p5[65536], p6[65536], p7[65536], p8[65536], p9[65536], p10[65536], p11[65536], p12[65536], p13[65536], p14[65536], p15[65536];
-char buf[65536];
-int pi1, pi2, pi3;
+char p1[1000], p2[1000], p3[1000], p4[1000], p5[1000], p6[1000], p7[1000], p8[1000];
+char p9[1000], p10[1000], p11[1000], p12[1000], p13[1000], p14[1000], p15[1000], p16[1000], p17[1000];
+
+char buf[4096];
+
+void checkNull(char* buf)
+{
+	if (buf[strlen(buf)-1] == '\n')
+	{
+	  buf[strlen(buf)-1] = '\0';
+	}
+	/*
+	if ((strcmp(buf, "(null)") == 0) || (strcmp(buf, "(null)\n") == 0))
+	{
+	    buf[0]='\0';
+	}*/
+}
 
 sqlite_int64
 GetVideoMetadataLite(const char * path, char * name)
 {
 	struct stat file;
 	int ret;
-	char *metadata_ex = malloc(PATH_MAX);
-	sprintf(metadata_ex, "%s.meta", path);
+	char *meta_path = malloc(PATH_MAX);
+	char *path_dup = malloc(PATH_MAX);
 
-	if ( stat(metadata_ex, &file) != 0 )
+	sprintf(path_dup, "%s", path);
+	char *dir_end = memrchr(path_dup, '/', strlen(path_dup));
+	*dir_end = '\0';
+	DPRINTF(E_DEBUG, L_METADATA, "Dirpath...[%s]\n", path_dup);
+	sprintf(meta_path, "%s/.meta/%s",path_dup, basename(path));
+
+	if ( stat(meta_path, &file) != 0 )
 	{
-		DPRINTF(E_WARN, L_METADATA, "GetVideoMetadataLite stat error for %s%s!\n", path, name);
+		DPRINTF(E_DEBUG, L_METADATA, "Get actual meta: %s!\n", meta_path);
+		free (meta_path);
+		free (path_dup);
 		return GetVideoMetadata(path, name);
 	} else
 	{
-		DPRINTF(E_DEBUG, L_METADATA, "Reading metadata file...[%s]\n", path);
+		DPRINTF(E_DEBUG, L_METADATA, "Reading metadata file...[%s]\n", meta_path);
 
 		// Reading metadata file
-		FILE *metadata_ex_d = fopen(metadata_ex, "r");
-		unsigned int n = fread(&buf, 1, strlen(buf), metadata_ex_d);
-		sscanf(buf, "%s\n%d\n%d\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%d\n",p1, pi1, pi2,
-			p3,p4,p5,p6,p7,p8,p9,p11,p11,p12,p13,p14,p15,pi3);
-
+		FILE *metadata_ex_d = fopen(meta_path, "r");
+		
+		fgets(p2, 1000, metadata_ex_d);
+		fgets(p3, 1000, metadata_ex_d);
+		fgets(p4, 1000, metadata_ex_d);
+		fgets(p5, 1000, metadata_ex_d);
+		fgets(p6, 1000, metadata_ex_d);
+		fgets(p7, 1000, metadata_ex_d);
+		fgets(p8, 1000, metadata_ex_d);
+		fgets(p9, 1000, metadata_ex_d);
+		fgets(p10, 1000, metadata_ex_d);
+		fgets(p11, 1000, metadata_ex_d);
+		fgets(p12, 1000, metadata_ex_d);
+		fgets(p13, 1000, metadata_ex_d);
+		fgets(p14, 1000, metadata_ex_d);
+		fgets(p15, 1000, metadata_ex_d);
+		fgets(p16, 1000, metadata_ex_d);
+		fgets(p17, 1000, metadata_ex_d);
+		
+		checkNull(p2);
+		checkNull(p3);
+		checkNull(p4);
+		checkNull(p5);
+		checkNull(p6);
+		checkNull(p7);
+		checkNull(p8);
+		checkNull(p9);
+		checkNull(p10);
+		checkNull(p11);
+		checkNull(p12);
+		checkNull(p13);
+		checkNull(p14);
+		checkNull(p15);
+		checkNull(p16);
+		checkNull(p17);
+		
+		/*
+		fread(&buf, 1, sizeof(buf), metadata_ex_d);
+		
+		sscanf(buf, "%s\n%lld\n%ld\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%lld\n",p1, &pi1, &pi2,
+			p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,&pi3);
+		*/
+			/*
+		    sprintf(buf, "%s\n%lld\n%ld\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%lld\n", path, (long long)file.st_size,
+			file.st_mtime, m.duration, m.date, m.channels, m.bitrate, m.frequency, m.resolution, m.title,
+			m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
+			m.mime, album_art);
+		*/
 		fclose(metadata_ex_d);
-		free(metadata_ex);
-
+	
+		
+		long long int pi2 = strtoll(p2, NULL, 10);
+		long int pi3 = strtol(p3, NULL, 10);
+		long long int pi17 = strtoll(p17, NULL, 10);
+		
 		ret = sql_exec(db, "INSERT into DETAILS"
 		                   " (PATH, SIZE, TIMESTAMP, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE, RESOLUTION,"
 		                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART) "
 		                   "VALUES"
 		                   " (%Q, %lld, %ld, %Q, %Q, %Q, %Q, %Q, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld);",
-		                   path, (long long)pi1, pi2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, pi3);
+		                   path, pi2, pi3, p4, p5, p6, p7, p8, p9, p10,
+		                   p11, p12, p13, p14, p15,
+		                   p16, pi17);
+		                   
+		                   /*
+		ret = sql_exec(db, "INSERT into DETAILS"
+		                   " (PATH, SIZE, TIMESTAMP, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE, RESOLUTION,"
+		                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART) "
+		                   "VALUES"
+		                   " (%Q, %lld, %ld, %Q, %Q, %Q, %Q, %Q, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld);",
+		                   p1, (long long)pi1, pi2, p3, p4, p5, p6, p7, p8, p9,
+		                   p10, p11, p12, p13, p14,
+		                   //NULL, NULL, NULL, NULL, NULL,
+		                   p15, pi3);*/
+		/*
+		ret = sql_exec(db, "INSERT into DETAILS"
+	                   " (PATH, SIZE, TIMESTAMP, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE, RESOLUTION,"
+	                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART) "
+	                   "VALUES"
+	                   " (%Q, %lld, %ld, %Q, %Q, %Q, %Q, %Q, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld);",
+	                   path, (long long)file.st_size, file.st_mtime, m.duration,
+	                   m.date, m.channels, m.bitrate, m.frequency, m.resolution,  m.title,
+	                   m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
+                           m.mime, album_art);
+                */
 
 		if( ret == SQLITE_OK )
 		{
 			ret = sqlite3_last_insert_rowid(db);
 			check_for_captions(path, ret);
 		}
+		free (meta_path);
+		free (path_dup);
 
 		return ret;
 	}
@@ -1680,8 +1776,8 @@ video_no_dlna:
 	                   "VALUES"
 	                   " (%Q, %lld, %ld, %Q, %Q, %Q, %Q, %Q, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld);",
 	                   path, (long long)file.st_size, file.st_mtime, m.duration,
-	                   m.date, m.channels, m.bitrate, m.frequency, m.resolution,
-			   m.title, m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
+	                   m.date, m.channels, m.bitrate, m.frequency, m.resolution,  m.title,
+	                   m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
                            m.mime, album_art);
 	if( ret != SQLITE_OK )
 	{
@@ -1696,15 +1792,38 @@ video_no_dlna:
 		check_for_captions(path, ret);
 
 		// Create metadata file
-		char *metadata_ex = malloc(PATH_MAX);
-		sprintf(metadata_ex, "%s.meta", path);
-		FILE *metadata_ex_d = fopen(metadata_ex, "w");
-		sprintf(buf, "%s\n%d\n%d\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%d\n", path, (long long)file.st_size, 
-			file.st_mtime, m.duration, m.date, m.channels, m.bitrate, m.frequency, m.resolution, 
-			m.title, m.creator, m.artist, m.genre, m.comment, m.dlna_pn, m.mime, album_art);
-		unsigned int n = fwrite(&buf, 1, strlen(buf), metadata_ex_d);
-		fclose(metadata_ex_d);
-		free(metadata_ex);
+		struct stat file_stat;
+		char *meta_path = malloc(PATH_MAX);
+		char *path_dup = malloc(PATH_MAX);
+
+		sprintf(path_dup, "%s", path);
+		char *dir_end = memrchr(path_dup, '/', strlen(path_dup));
+		*dir_end = '\0';
+		DPRINTF(E_DEBUG, L_METADATA, "Dirpath...[%s]\n", path_dup);
+
+		sprintf(meta_path, "%s/.meta/", path_dup);
+		if ( stat(meta_path, &file_stat) != 0 )
+		{
+ 			mkdir(meta_path, S_IRWXU|S_IRWXG|S_IRWXO);
+			DPRINTF(E_DEBUG, L_METADATA, "Create metadata path...[%s]\n", meta_path);
+		}
+		sprintf(meta_path, "%s/.meta/%s",path_dup, basename(path));
+		
+		//umask(S_IREAD|S_IWRITE|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH);
+		FILE *metadata_ex_d = fopen(meta_path, "w");
+		if (metadata_ex_d)
+		{
+		    sprintf(buf, "%lld\n%ld\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%lld\n", (long long)file.st_size,
+			file.st_mtime, m.duration, m.date, m.channels, m.bitrate, m.frequency, m.resolution, m.title,
+			m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
+			m.mime, album_art);
+		    fwrite(&buf, 1, strlen(buf), metadata_ex_d);
+		    fclose(metadata_ex_d);
+		} else
+		    DPRINTF(E_WARN, L_METADATA, "Unable to create metadata file...[%s]\n", meta_path);
+		
+		free(meta_path);
+		free(path_dup);
 	}
 	free_metadata(&m, free_flags);
 

@@ -10,9 +10,9 @@
 # or :
 # $ make install
 #
-CFLAGS = -Wall -O -D_GNU_SOURCE -g -DDEBUG -D_FILE_OFFSET_BITS=64
-#CFLAGS = -Wall -g -Os -D_GNU_SOURCE
-#CFLAGS = -Wall -g -D_GNU_SOURCE  \
+#CFLAGS = -Wall -O -D_GNU_SOURCE -g -DDEBUG -D_FILE_OFFSET_BITS=64
+CFLAGS = -Wall -g -Os -D_GNU_SOURCE -D_FILE_OFFSET_BITS=64
+#CFLAGS = -Wall -g -D_GNU_SOURCE -Os -D_FILE_OFFSET_BITS_64  \
 #	 -I/usr/include/sys -I/usr/include/ffmpeg \
 #	 -I/usr/include/libavutil -I/usr/include/libavcodec -I/usr/include/libavformat \
 #	 -I/usr/include/ffmpeg/libavutil -I/usr/include/ffmpeg/libavcodec -I/usr/include/ffmpeg/libavformat
