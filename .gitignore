@@ -5,9 +5,9 @@ config.log
 config.h
 confdefs.h
 conftest.*
-missing
 mkinstalldirs
 po/Makefile
+po/Makefile.in
 po/POTFILES
 po/*.gmo
 po/stamp-po
